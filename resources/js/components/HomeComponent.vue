@@ -4,8 +4,21 @@
         <button @click="uploadFile">Upload</button>
     </div>
     <div>
-        <ul>
-            <li v-for="(homeOwner, index) in homeOwners" :key="index">{{ homeOwner }}</li>
+        <br>
+        <button @click="changeList" v-if="homeOwners.length">{{buttonText}}</button>
+        <div v-if="showRaw">{{homeOwners}}</div>
+        <ul v-else>
+            <li v-for="(homeOwner, index) in homeOwners" :key="index">
+                Home number {{ index + 1 }}
+                <ul>
+                    <li v-for="(owner,index) in homeOwner" :key="index">
+                        Title: {{ owner.title }}<br>
+                        First Name: {{ owner.first_name ?? 'null'}}<br>
+                        Initial: {{ owner.initial ?? 'null'}}<br>
+                        Last Name: {{ owner.last_name }}
+                    </li>
+                </ul>
+            </li>
         </ul>
         {{ error }}
     </div>
@@ -18,6 +31,7 @@ export default {
             file: null,
             homeOwners: [],
             error: '',
+            showRaw: false,
         };
     },
     methods: {
@@ -30,7 +44,6 @@ export default {
             formData.append('file', this.file);
             axios.post('/csv-upload', formData)
                 .then(response => {
-                    console.log(JSON.parse(response.data));
                     this.homeOwners = JSON.parse(response.data);
                 })
                 .catch(error => {
@@ -38,6 +51,15 @@ export default {
                         this.error = error.response.data.errors.file[0];
                     }
                 });
+        },
+
+        changeList() {
+            this.showRaw = !this.showRaw;
+        }
+    },
+    computed: {
+        buttonText() {
+            return this.showRaw ? 'Show List' : 'Show Raw';
         },
     },
 };
