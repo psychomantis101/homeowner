@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\OwnerCsvRequest;
 use App\Services\ParseCsvOwnersService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 
 class HomeController extends Controller
 {
@@ -11,34 +13,17 @@ class HomeController extends Controller
         protected ParseCsvOwnersService $parseCsvOwnersService
     ) {}
 
-    public function index()
+    public function index(): View
     {
         return view('home');
     }
 
-    public function csvUpload(OwnerCsvRequest $request)
+    public function csvUpload(OwnerCsvRequest $request): JsonResponse
     {
-        $file = $request->file('file');
+        $csv = $request->file('file');
 
-        $homeOwners = json_encode($this->readCSV($file));
+        $homeOwners = json_encode($this->parseCsvOwnersService->readCsv($csv));
 
         return response()->json($homeOwners);
-    }
-
-    protected function readCSV($csv)
-    {
-        $file = fopen($csv, "r");
-
-        fgetcsv($file);
-
-        $homeOwners = [];
-
-        while (($row = fgetcsv($file, 1000, ",")) !== FALSE) {
-            $homeOwners[] = $this->parseCsvOwnersService->parseOwners($row[0]);
-        }
-
-        fclose($file);
-
-        return $homeOwners;
     }
 }

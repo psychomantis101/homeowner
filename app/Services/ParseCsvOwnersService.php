@@ -4,7 +4,23 @@ namespace App\Services;
 
 class ParseCsvOwnersService
 {
-    public function parseOwners($owners): array
+    public function readCsv($csv): array
+    {
+        $file = fopen($csv, "r");
+
+        fgetcsv($file);
+
+        $homeOwners = [];
+
+        while (($row = fgetcsv($file, 1000, ",")) !== FALSE) {
+            $homeOwners[] = $this->parseOwners($row[0]);
+        }
+
+        fclose($file);
+
+        return $homeOwners;
+    }
+    private function parseOwners($owners): array
     {
         $parsedOwners = [];
 
